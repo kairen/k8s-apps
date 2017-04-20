@@ -1,0 +1,65 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: worker0
+spec:
+  template:
+    metadata:
+      labels:
+        app: worker0
+        role: worker
+    spec:
+      containers:
+      - name: worker0
+        image: tensorflow/tensorflow:1.0.1
+        ports:
+        - containerPort: 2222
+        env:
+        - name: PS_HOSTS
+          valueFrom:
+            configMapKeyRef:
+              name: cluster-config
+              key: ps
+        - name: WORKER_HOSTS
+          valueFrom:
+            configMapKeyRef:
+              name: cluster-config
+              key: worker
+        command: ["/bin/sh", "-c"]
+        args: ["
+            curl https://gist.githubusercontent.com/kairen/17da73517ae6a2dca9df578d4b3adef0/raw/6ca3d7b15cf3dde5ab321ef43c4635b2d494a1a1/cancer_classifier.py -o /opt/cancer_classifier.py;
+            python /opt/cancer_classifier.py \
+                   --ps_hosts=$(PS_HOSTS) \
+                   --worker_hosts=$(WORKER_HOSTS) \
+                   --job_name=worker \
+                   --task_index=0 \
+                   --log_path=/tmp/train \
+                   --data_dir=/data ;
+            echo 'Train done...';"]
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: tmp
+          mountPath: /tmp/train
+      restartPolicy: Never
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: bg-data-pvc
+        - name: tmp
+          persistentVolumeClaim:
+            claimName: bg-tmp-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: tf-worker0-service
+  name: worker0
+spec:
+  selector:
+    app: worker0
+  ports:
+  - port: 2222
+    targetPort: 2222

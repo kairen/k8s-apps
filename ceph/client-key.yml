@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ceph-client-key
+  namespace: default
+type: Opaque
+data:
+  ceph-client-key: CLIENT_KEY
