@@ -14,7 +14,7 @@ $ kubectl -n ceph exec -it ${PODNAME} -- rbd create ceph-rbd-test --size 20G
 $ kubectl -n ceph exec -it ${PODNAME} -- rbd info ceph-rbd-test
 ```
 
-Create a new `StorageClass` for rbd(Need [quay.io/attcomdev/kube-controller-manager:v1.6.1](https://quay.io/repository/attcomdev/kube-controller-manager?tag=v1.6.1&tab=tags)):
+Create a new `StorageClass` for rbd(pls, change kube-controller-manager image to [quay.io/attcomdev/kube-controller-manager:{version}](https://quay.io/repository/attcomdev/kube-controller-manager?tag=v1.6.1&tab=tags)):
 ```sh
 # Create a osd pool
 $ export PODNAME=`kubectl -n ceph get pods --selector="app=ceph,daemon=mon" --output=template --template="{{with index .items 0}}{{.metadata.name}}{{end}}"`
