@@ -1,0 +1,6 @@
+[submodule "kubereum"]
+	path = kubereum
+	url = https://github.com/kairen/kubereum.git
+[submodule "kube-s3-portal"]
+	path = kube-s3-portal
+	url = https://github.com/inwinstack/kube-s3-portal.git
