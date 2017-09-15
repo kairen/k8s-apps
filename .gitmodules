@@ -4,3 +4,6 @@
 [submodule "kube-s3-portal"]
 	path = kube-s3-portal
 	url = https://github.com/inwinstack/kube-s3-portal.git
+[submodule "ceph-in-k8s"]
+	path = ceph-in-k8s
+	url = https://github.com/kairen/ceph-in-k8s.git
