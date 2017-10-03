@@ -7,3 +7,6 @@
 [submodule "ceph-in-k8s"]
 	path = ceph-in-k8s
 	url = https://github.com/kairen/ceph-in-k8s.git
+[submodule "cloud-of-mosquitto"]
+	path = cloud-of-mosquitto
+	url = https://github.com/kairen/cloud-of-mosquitto
