@@ -1,0 +1,54 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  labels:
+    app: redis-ha
+    redis-node: "true"
+    role: slave
+  name: redis-ha-slave
+spec:
+  serviceName: redis
+  podManagementPolicy: OrderedReady
+  replicas: 2
+  selector:
+    matchLabels:
+      app: redis-ha
+      redis-node: "true"
+      role: slave
+  template:
+    metadata:
+      labels:
+        app: redis-ha
+        redis-node: "true"
+        role: slave
+    spec:
+      containers:
+      - name: redis
+        image: kairen/redis:v4.0.2
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 6379
+          protocol: TCP
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - mountPath: /redis-data
+          name: data
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 10
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: rbd
+      resources:
+        requests:
+          storage: 8Gi
+  updateStrategy:
+    type: OnDelete

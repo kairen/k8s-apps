@@ -1,0 +1,46 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: redis-ha
+    redis-sentinel: "true"
+    role: sentinel
+  name: redis-ha-sentinel
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: redis-ha
+      redis-sentinel: "true"
+      role: sentinel
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: redis-ha
+        redis-sentinel: "true"
+        role: sentinel
+    spec:
+      containers:
+      - name: sentinel
+        image: kairen/redis:v4.0.2
+        env:
+        - name: SENTINEL
+          value: "true"
+        ports:
+        - containerPort: 26379
+          protocol: TCP
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        imagePullPolicy: IfNotPresent
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
