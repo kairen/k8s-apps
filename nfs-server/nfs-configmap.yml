@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nfs-conf
+data:
+  EXPORTS_ENV: |
+    /exports *(rw,fsid=0,root_squash,no_subtree_check,insecure)

@@ -1,0 +1,61 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: zookeeper
+  labels:
+    app: zookeeper
+spec:
+  serviceName: zookeeper-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      containers:
+        - name: zookeeper
+          image: kairen/zookeeper:3.4.11
+          ports:
+            - name: client
+              containerPort: 2181
+              protocol: TCP
+            - name: cluster
+              containerPort: 2888
+              protocol: TCP
+            - name: election
+              containerPort: 3888
+              protocol: TCP
+          env:
+            - name: ZOOKEEPER_NODE_COUNT
+              value: "3"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+          livenessProbe:
+            exec:
+              command:
+              - "/healthcheck.sh"
+            initialDelaySeconds: 15
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+              - "/healthcheck.sh"
+            initialDelaySeconds: 15
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: zookeeper-storage
+              mountPath: /var/lib/zookeeper
+  volumeClaimTemplates:
+    - metadata:
+        name: zookeeper-storage
+      spec:
+        storageClassName: rbd
+        resources:
+          requests:
+            storage: 10Gi
+        accessModes: [ "ReadWriteOnce" ]
