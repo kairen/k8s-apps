@@ -1,44 +1,19 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: kafka
-spec:
-  ports:
-    - name: kafka
-      port: 9092
-      targetPort: 9092
-      protocol: TCP
-  selector:
-    name: kafka
-  type: ClusterIP
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: kafka-headless
-spec:
-  ports:
-    - name: kafka
-      port: 9092
-      targetPort: 9092
-      protocol: TCP
-  selector:
-    name: kafka
-  type: ClusterIP
-  clusterIP: None
----
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
   name: kafka
+  labels:
+    app: kafka
 spec:
-  serviceName: "kafka-headless"
-  # used 3 replicas in order to have alwayas majority for leader election
+  serviceName: kafka-headless
   replicas: 3
+  selector:
+    matchLabels:
+      app: kafka
   template:
     metadata:
       labels:
-        name: kafka
+        app: kafka
     spec:
       securityContext:
         fsGroup: 1001
@@ -51,20 +26,20 @@ spec:
              mountPath: /var/lib/kafka/
       containers:
         - name: kafka
-          image: kairen/kafka:v1.0.0
-          env:
-            - name: KAFKA_ADVERTISED_HOST
-              value: "172.22.132.10"
-            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
-              value: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
-            - name: KAFKA_ADVERTISED_PROTOCOL_NAME
-              value: OUTSIDE
-            - name: KAFKA_ADVERTISED_PORT
-              value: "9094"
-            - name: KAFKA_PROTOCOL_NAME
-              value: INSIDE
-            - name: KAFKA_PORT
-              value: "9092"
+          image: kairen/kafka:1.0.0
+          # env:
+          #   - name: KAFKA_ADVERTISED_HOST
+          #     value: "172.22.132.10"
+          #   - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+          #     value: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+          #   - name: KAFKA_ADVERTISED_PROTOCOL_NAME
+          #     value: OUTSIDE
+          #   - name: KAFKA_ADVERTISED_PORT
+          #     value: "9094"
+          #   - name: KAFKA_PROTOCOL_NAME
+          #     value: INSIDE
+          #   - name: KAFKA_PORT
+          #     value: "9092"
           ports:
             - name: kafka
               containerPort: 9092
@@ -75,13 +50,13 @@ spec:
           livenessProbe:
             exec:
               command:
-              - "/opt/kafka/kafka_healthcheck.sh"
+              - "healthcheck"
             initialDelaySeconds: 15
             timeoutSeconds: 5
           readinessProbe:
             exec:
               command:
-              - "/opt/kafka/kafka_healthcheck.sh"
+              - "healthcheck"
             initialDelaySeconds: 15
             timeoutSeconds: 5
   volumeClaimTemplates:
