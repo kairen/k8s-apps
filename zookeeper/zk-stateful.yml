@@ -38,13 +38,13 @@ spec:
           livenessProbe:
             exec:
               command:
-              - "/healthcheck.sh"
+              - "healthcheck"
             initialDelaySeconds: 15
             timeoutSeconds: 5
           readinessProbe:
             exec:
               command:
-              - "/healthcheck.sh"
+              - "healthcheck"
             initialDelaySeconds: 15
             timeoutSeconds: 5
           volumeMounts:

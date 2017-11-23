@@ -49,5 +49,7 @@ ENV PATH=$PATH:/$DISTRO_NAME/bin \
     ZOOCFGDIR=$ZOO_CONF_DIR
 
 COPY ./config/ ${ZOO_CONF_DIR}/
-COPY ./scripts/ /
-ENTRYPOINT ["/entrypoint.sh"]
+COPY ./scripts/entrypoint.sh /usr/local/bin/entrypoint
+COPY ./scripts/healthcheck.sh /usr/local/bin/healthcheck
+
+ENTRYPOINT ["entrypoint"]
