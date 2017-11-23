@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: redis
-        image: kairen/redis:v4.0.2
+        image: kairen/redis:4.0.2
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 6379

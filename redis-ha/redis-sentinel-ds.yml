@@ -23,7 +23,7 @@ spec:
         node-type: redis
       containers:
       - name: sentinel
-        image: kairen/redis:v4.0.2
+        image: kairen/redis:4.0.2
         env:
         - name: SENTINEL
           value: "true"
