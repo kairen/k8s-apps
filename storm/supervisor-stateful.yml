@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: supervisor-headless
+  labels:
+    app: supervisor-headless
+spec:
+  ports:
+  - port: 6700
+    name: slot0
+  - port: 6701
+    name: slot1
+  - port: 6702
+    name: slot2
+  - port: 6703
+    name: slot3
+  clusterIP: None
+  selector:
+    app: supervisor
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: supervisor
+spec:
+  serviceName: supervisor-headless
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: supervisor
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                    - supervisor
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: k8snimbus
+        imagePullPolicy: Always
+        image: elliswu/storm-base:1.1.1
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+        ports:
+        - containerPort: 6700
+          name: slot0
+        - containerPort: 6701
+          name: slot1
+        - containerPort: 6702
+          name: slot2
+        - containerPort: 6703
+          name: slot3
+        env:
+        - name : STORM_ZOOKEEPER
+          value: "zookeeper"
+        - name: NIMBUS_SEEDS
+          value: "nimbus-0.nimbus-headless.default.svc.cluster.local nimbus-1.nimbus-headless.default.svc.cluster.local"
+        - name: STORM_SUPERVISOR_SLOTS_PORTS
+          value: "6700 6701 6702 6703"
+        - name: STORM_ROLE
+          value: "supervisor"
+        - name: STORM_LOCAL_DIR
+          value: "/tmp"
+        - name: STORM_LOG_DIR
+          value: "/var/lib/storm/logs"
+        command:
+        - sh
+        - -c
+        - /opt/storm/bin/run_storm.sh
+        volumeMounts:
+        - name: storm-logs
+          mountPath: /var/lib/storm/logs
+  volumeClaimTemplates:
+  - metadata:
+      name: storm-logs
+    spec:
+      storageClassName: rbd
+      resources:
+        requests:
+          storage: 10Gi
+      accessModes: [ "ReadWriteOnce" ]

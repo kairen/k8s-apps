@@ -1,0 +1,18 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: storm-svc
+  labels:
+    app: storm-svc
+spec:
+  ports:
+  - port: 6627
+    name: nimbus-client
+  - port: 8080
+    name: ui
+  type: LoadBalancer
+  externalIPs:
+  - 172.22.132.10
+  selector:
+    app: nimbus
