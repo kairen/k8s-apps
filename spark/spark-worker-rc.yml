@@ -1,0 +1,42 @@
+kind: ReplicationController
+apiVersion: v1
+metadata:
+  name: spark-worker-controller
+spec:
+  replicas: 2
+  selector:
+    component: spark-worker
+  template:
+    metadata:
+      labels:
+        component: spark-worker
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: spark
+                operator: In
+                values:
+                - worker
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+        - name: spark-worker
+          image: getter/k8s-spark-2.2:latest
+          volumeMounts:
+          - mountPath: "/mnt/cephfs"
+            name: cephfs
+          command: ["/start-worker"]
+          ports:
+            - containerPort: 8081
+          resources:
+            requests:
+              cpu: 2
+      volumes:
+        - name: cephfs
+          cephfs:
+            monitors:
+            - 172.2.0.14:6789
+            user: admin
+            secretFile: "/root/admin.secret"

@@ -1,0 +1,37 @@
+kind: ReplicationController
+apiVersion: v1
+metadata:
+  name: spark-master-controller
+spec:
+  replicas: 1
+  selector:
+    component: spark-master
+  template:
+    metadata:
+      labels:
+        component: spark-master
+    spec:
+      nodeSelector:
+        spark: master
+      containers:
+        - name: spark-master
+          image: getter/k8s-spark-2.2:latest
+          volumeMounts:
+          - mountPath: "/mnt/cephfs"
+            name: cephfs
+          command: ["/start-master"]
+          ports:
+            - containerPort: 7077
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 100m
+      volumes:
+        - name: cephfs
+          cephfs:
+            monitors:
+            - 172.2.0.14:6789
+            - 172.2.0.15:6789
+            - 172.2.0.16:6789
+            user: admin
+            secretFile: "/root/admin.secret"
